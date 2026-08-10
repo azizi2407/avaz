@@ -175,7 +175,7 @@ Betik yazarlık puanı üretmez. Bulgu çıkmaması metnin iyi olduğunu, bulgu 
 ### Test ve değerlendirme
 
 ```bash
-pip install -e ".[dev]"
+pip install -r requirements-dev.txt
 pytest -q
 ```
 
@@ -355,7 +355,7 @@ The script produces no authorship score. An empty report does not mean the text 
 ### Tests and evaluation
 
 ```bash
-pip install -e ".[dev]"
+pip install -r requirements-dev.txt
 pytest -q
 ```
 
