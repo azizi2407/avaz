@@ -1,0 +1,23 @@
+{
+  "name": "avaz",
+  "owner": {
+    "name": "azizi2407",
+    "url": "https://github.com/azizi2407"
+  },
+  "metadata": {
+    "description": "Türkçe metin doğallaştırma araçları",
+    "version": "1.1.0"
+  },
+  "plugins": [
+    {
+      "name": "avaz",
+      "source": "./plugins/avaz",
+      "description": "Türkçe metinleri anlamı, olguları ve yazarın sesini koruyarak doğallaştıran editoryal skill",
+      "version": "1.1.0",
+      "author": { "name": "azizi2407" },
+      "homepage": "https://github.com/azizi2407/avaz",
+      "license": "MIT",
+      "keywords": ["turkish", "türkçe", "editing", "writing", "style", "proofreading"]
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "statistics": {
+    "characters": 100,
+    "words": 13,
+    "paragraphs": 1,
+    "sentences": 4,
+    "mean_sentence_words": 3.25,
+    "sentence_length_std": 1.48,
+    "sentence_length_cv": 0.455
+  },
+  "summary": {
+    "error": 0,
+    "review": 0,
+    "notice": 0
+  },
+  "findings": []
+}

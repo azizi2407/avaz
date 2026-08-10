@@ -1,0 +1,10 @@
+{
+  "name": "avaz",
+  "version": "1.1.0",
+  "description": "Türkçe metinleri anlamı, olguları ve yazarın sesini koruyarak doğal, akıcı ve bağlama uygun hâle getirir.",
+  "author": { "name": "azizi2407" },
+  "homepage": "https://github.com/azizi2407/avaz",
+  "repository": "https://github.com/azizi2407/avaz",
+  "license": "MIT",
+  "keywords": ["turkish", "türkçe", "editing", "writing", "style", "proofreading"]
+}

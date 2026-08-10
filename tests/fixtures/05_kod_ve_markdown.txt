@@ -1,0 +1,7 @@
+Kurulum için `pip install avaz` komutunu çalıştır.
+
+```python
+RANGE = "2020—2024"  # em dash sabiti
+```
+
+Ayrıntı için [belgelere](https://example.com/docs) bak. Şablon: {{musteri_adi}}.

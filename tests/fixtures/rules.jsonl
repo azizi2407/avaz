@@ -1,0 +1,83 @@
+{"rule":"olarak-kalibi","text":"Aktaş Elektrik olarak ortaya koyduğumuz kalite ölçülebilir.","gold":true}
+{"rule":"olarak-kalibi","text":"Firma olarak müşteri memnuniyetine önem veriyoruz.","gold":true}
+{"rule":"olarak-kalibi","text":"Ekip olarak bu projeye inanıyoruz.","gold":true}
+{"rule":"olarak-kalibi","text":"Şirket olarak sorumluluğumuzu yerine getirdik.","gold":true}
+{"rule":"olarak-kalibi","text":"Bir tasarımcı olarak şunu düşünüyoruz.","gold":true}
+{"rule":"olarak-kalibi","text":"Kurum olarak yürüttüğümüz çalışmalar sürüyor.","gold":true}
+{"rule":"olarak-kalibi","text":"Banka olarak sunduğumuz hizmetler genişledi.","gold":true}
+{"rule":"olarak-kalibi","text":"Öğrenciler grup olarak çalıştı.","gold":false}
+{"rule":"olarak-kalibi","text":"Aile olarak tatile gittiler.","gold":false}
+{"rule":"olarak-kalibi","text":"Örnek olarak bu yöntemi kullanıyoruz.","gold":false}
+{"rule":"olarak-kalibi","text":"Yedek olarak sakladığımız dosya bozulmuş.","gold":false}
+{"rule":"olarak-kalibi","text":"Sonuç olarak bu yaklaşımı öneriyoruz.","gold":false}
+{"rule":"olarak-kalibi","text":"Genel olarak bu yöntemi tercih ediyoruz.","gold":false}
+{"rule":"olarak-kalibi","text":"Ek olarak bir konuyu açıklığa kavuşturacağız.","gold":false}
+{"rule":"olarak-kalibi","text":"Ayrıntılı olarak incelediğimiz rapor elimizde.","gold":false}
+{"rule":"olarak-kalibi","text":"Müdür olarak atandı.","gold":false}
+{"rule":"olarak-kalibi","text":"Şirket olarak tescil edildi.","gold":false}
+{"rule":"olarak-kalibi","text":"Yönetim olarak adlandırılan birim kapatıldı.","gold":false}
+{"rule":"olarak-kalibi","text":"Banka olarak faaliyet gösteren kuruluşlar denetlenir.","gold":false}
+{"rule":"olarak-kalibi","text":"Grup olarak sınıflandırılan canlılar incelendi.","gold":false}
+{"rule":"copula-chain","text":"Bu bir kitaptır.","gold":true}
+{"rule":"copula-chain","text":"Bu yöntem hızlıdır.","gold":true}
+{"rule":"copula-chain","text":"Sonuç nettir.","gold":true}
+{"rule":"copula-chain","text":"Karar kesindir.","gold":true}
+{"rule":"copula-chain","text":"Veriler günceldir.","gold":true}
+{"rule":"copula-chain","text":"Bu yaklaşım doğrudur.","gold":true}
+{"rule":"copula-chain","text":"Önce paketi indir.","gold":false}
+{"rule":"copula-chain","text":"Sonra dosyayı getir.","gold":false}
+{"rule":"copula-chain","text":"Ardından listeyi bildir.","gold":false}
+{"rule":"copula-chain","text":"Değerleri artır.","gold":false}
+{"rule":"copula-chain","text":"Dosyayı kaldır.","gold":false}
+{"rule":"copula-chain","text":"Çocuğu erken yatır.","gold":false}
+{"rule":"copula-chain","text":"Bunu herkes unutur.","gold":false}
+{"rule":"copula-chain","text":"Öğretmen çocuklara okumayı öğretir.","gold":false}
+{"rule":"copula-chain","text":"Bu bir satır.","gold":false}
+{"rule":"copula-chain","text":"Bahçede bir çadır.","gold":false}
+{"rule":"spelling-error","text":"Herşey yolunda.","gold":true}
+{"rule":"spelling-error","text":"Hiç bir sorun yok.","gold":true}
+{"rule":"spelling-error","text":"Bir kaç gün sürdü.","gold":true}
+{"rule":"spelling-error","text":"Bir çok kişi geldi.","gold":true}
+{"rule":"spelling-error","text":"Herkez biliyor.","gold":true}
+{"rule":"spelling-error","text":"Bu kadar güzelki anlatamam.","gold":true}
+{"rule":"spelling-error","text":"Yarın gelecekmi acaba?","gold":true}
+{"rule":"spelling-error","text":"Bugünki toplantı iptal.","gold":true}
+{"rule":"spelling-error","text":"Yarınkı plan belli.","gold":true}
+{"rule":"spelling-error","text":"Bir sürü şey var, veyahutta yok.","gold":true}
+{"rule":"spelling-error","text":"Ankara' da yaşıyorum.","gold":true}
+{"rule":"spelling-error","text":"Yarın gelicek dedi.","gold":true}
+{"rule":"spelling-error","text":"Bu bir çok yönlü sorundur.","gold":false}
+{"rule":"spelling-error","text":"Bir kaç yönlü bakış açısı gerekiyor.","gold":false}
+{"rule":"spelling-error","text":"Belki de haklısın.","gold":false}
+{"rule":"spelling-error","text":"Çünkü vakit yoktu.","gold":false}
+{"rule":"spelling-error","text":"Hâlbuki anlaşmıştık.","gold":false}
+{"rule":"spelling-error","text":"Sanki hiç olmamış gibi.","gold":false}
+{"rule":"spelling-error","text":"Bugünkü toplantı iptal.","gold":false}
+{"rule":"spelling-error","text":"Yarınki plan belli.","gold":false}
+{"rule":"spelling-error","text":"Her şey yolunda gidiyor.","gold":false}
+{"rule":"spelling-error","text":"Ankara'da yaşıyorum.","gold":false}
+{"rule":"translationese","text":"Yüksek performansa sahip motor kullanıldı.","gold":true}
+{"rule":"translationese","text":"Ödeme işlemi gerçekleştirildi.","gold":true}
+{"rule":"translationese","text":"Kullanıcılara erişim sağlamak amaçlanıyor.","gold":true}
+{"rule":"translationese","text":"Raporda yer alan bulgular tartışıldı.","gold":true}
+{"rule":"translationese","text":"Tamamlanmış olan proje teslim edildi.","gold":true}
+{"rule":"translationese","text":"Geniş hafızaya sahip cihaz tanıtıldı.","gold":true}
+{"rule":"translationese","text":"Yer altı hattında bakım yapıldı.","gold":false}
+{"rule":"translationese","text":"Yer altında kalanlar kurtarıldı.","gold":false}
+{"rule":"translationese","text":"Sağlam bir zemin üzerine kuruldu.","gold":false}
+{"rule":"translationese","text":"Sağlar ve sollar tartıştı.","gold":false}
+{"rule":"translationese","text":"Bu olan bitene bir anlam veremedim.","gold":false}
+{"rule":"baglac-virgul","text":"Ancak, bu doğru değil.","gold":true}
+{"rule":"baglac-virgul","text":"Ayrıca, şunu da ekleyelim.","gold":true}
+{"rule":"baglac-virgul","text":"Bununla birlikte, sonuç değişmedi.","gold":true}
+{"rule":"baglac-virgul","text":"Dolayısıyla, karar ertelendi.","gold":true}
+{"rule":"baglac-virgul","text":"Ancak bu doğru değil.","gold":false}
+{"rule":"baglac-virgul","text":"Ayrıca şunu da ekleyelim.","gold":false}
+{"rule":"baglac-virgul","text":"Rapor hazırlandı, ancak teslim edilmedi.","gold":false}
+{"rule":"baglac-virgul","text":"Bu bir sonuç, o ise bir başlangıç.","gold":false}
+{"rule":"em-dash","text":"Rapor — ki uzundu — teslim edildi.","gold":true}
+{"rule":"em-dash","text":"Aralık 2020–2024 arası ölçüldü.","gold":true}
+{"rule":"em-dash","text":"Bu ―bence― yanlış bir karar.","gold":true}
+{"rule":"em-dash","text":"Aralık 2020-2024 arası ölçüldü.","gold":false}
+{"rule":"em-dash","text":"Çok-yönlü bir bakış gerekiyor.","gold":false}
+{"rule":"em-dash","text":"Sayfa 15-32 arasına bak.","gold":false}

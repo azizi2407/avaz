@@ -21,19 +21,39 @@ Adı, sesin kendisinden gelir. Amaç metne yeni bir ses takmak değil, mevcut se
 1. **Olgu eklemez.** Metinde olmayan sayı, örnek, iddia veya neden uydurulmaz. Boşluk varsa doldurulmaz; işaretlenir ve kullanıcıya sorulur.
 2. **"AI yazmış" demez.** Yazarlık hükmü vermez. Yalnızca gözlenen editoryal belirtiyi, konumunu ve okuma etkisini raporlar.
 3. **Doğallık kusur demek değildir.** Kasıtlı yazım yanlışı, rastgele argo, emoji, ünlem veya dolgu ekleyerek "insanlaştırma" yapmaz.
-4. **Uzun çizgi (—) kullanmaz.** Ne üretir ne bırakır; girdide varsa temizler. Yerine virgül, parantez, kısa çizgi, iki nokta veya ayrı cümle.
-5. **"X olarak biz…" kalıbını kurmaz.** Marka, kurum, ekip veya rol adı `olarak` ile yan öğeye düşürülmez; özne doğrudan yazılır.
+4. **Ara söz uzun çizgisi (—) kullanmaz.** Ne üretir ne bırakır; girdide varsa temizler. Yerine virgül, parantez, kısa çizgi, iki nokta veya ayrı cümle. Satır başındaki konuşma çizgisi TDK kuralıdır ve korunur.
+5. **"X olarak biz…" kalıbını kurmaz.** Marka, kurum, ekip veya rol adı `olarak` ile yan öğeye düşürülmez; özne doğrudan yazılır. Karşıtlık odağı ve hukuki taraf sıfatı korunur.
 
 > "Aktaş Elektrik **olarak** ortaya koy**duğumuz** kalite ölçülebilir."
 > → "Aktaş Elektrik'**in** ortaya koy**duğu** kalite ölçülebilir."
 
+Kurallar çatıştığında sıra bellidir:
+
+> korunan bölgeler > kural 1 (olgu) > kural 2, 3 > kullanıcının o anki isteği > kural 4, 5 > profil varsayılanı
+
+Kural 4 ve 5 biçim kurallarıdır. Bir alıntıyı değiştirmenin, bir olguyu kaydırmanın veya korunan bir bölgeye dokunmanın gerekçesi olamazlar: alıntı içindeki yasak kalıbı "düzeltmek", söylenmemiş bir cümleyi tırnak içinde bırakmak demektir.
+
 ### Kurulum
 
-```bash
-git clone https://github.com/azizi2407/avaz.git ~/.claude/skills/avaz
+Depo bir plugin marketplace'idir. Önerilen yol:
+
+```
+/plugin marketplace add azizi2407/avaz
+/plugin install avaz@avaz
 ```
 
-Claude Code'u yeniden başlat. Skill `avaz` adıyla görünür.
+Bu yol sürüm takibi ve güncelleme sağlar; geliştirme dosyaları (`tests/`, `evals/`, CI) bağlam dizinine inmez.
+
+Tek skill olarak kullanmak isterseniz yalnızca skill dizinini kopyalayın:
+
+```bash
+git clone --depth 1 https://github.com/azizi2407/avaz.git /tmp/avaz
+cp -r /tmp/avaz/plugins/avaz/skills/avaz ~/.claude/skills/avaz
+```
+
+Claude Code'u yeniden başlatın. Skill `avaz` adıyla görünür; plugin kurulumunda `/avaz:avaz` olarak da çağrılabilir.
+
+> **Daha önce `~/.claude/skills/avaz` içine klonladıysanız:** depo kökü artık skill kökü değil. O dizinde `git pull` yapmak yerine dizini silip yukarıdaki iki yoldan birini uygulayın.
 
 ### Kullanım
 
@@ -45,7 +65,7 @@ ya da doğrudan:
 
 > Bu metni avaz ile düzenle: …
 
-Skill kendiliğinden tetiklenmez. Adıyla çağrıldığında ya da bir metni açıkça düzenleme isteğinde devreye girer. Özetleme, çeviri ve inceleme isteklerinde açılmaz.
+Skill dar tetiklenir: adıyla çağrıldığında ya da bir Türkçe metni açıkça düzenleme, sadeleştirme veya doğallaştırma isteğinde devreye girer. Özetleme, başka dile çevirme, salt yazım denetimi ve kısaltma isteklerinde açılmaması için `description` alanında negatif tetikleyici tanımlıdır. Bu bir eğilimdir, kesin bir kilit değildir.
 
 ### Yöntem
 
@@ -53,7 +73,7 @@ Avaz altı adımlı bir editoryal yordam uygular. Adımların sırası bağlayı
 
 **1. Koruma sözleşmesi.** Düzenlemeden önce dokunulmazlar listelenir: özel adlar, sayılar, tarihler, alıntılar, ürün özellikleri, iddialar, kipler, olumsuzluklar, hukuki ifadeler, komutlar ve dosya yolları.
 
-**2. Profil seçimi.** Mecra, tür, hedef kitle ve resmiyet düzeyine göre sekiz profilden biri veya birleşimi seçilir: kurumsal, haber, sosyal medya, reklam, açıklayıcı, teknik dokümantasyon, editoryal, diyalog, hukuki. Birleşik profilde baskın profil içerik ve riski, yardımcı profil ritim ve mecrayı belirler; çakışmada risk taşıyan profil kazanır.
+**2. Profil seçimi.** Mecra, tür, hedef kitle ve resmiyet düzeyine göre dokuz profilden biri veya birleşimi seçilir: kurumsal, haber, sosyal medya, reklam, açıklayıcı, teknik dokümantasyon, editoryal, diyalog, hukuki. Birleşik profilde baskın profil içerik ve riski, yardımcı profil ritim ve mecrayı belirler; çakışmada risk taşıyan profil kazanır.
 
 **3. Belirti taraması.** Şablonlu anlatım belirtileri üç ağırlıkta değerlendirilir:
 
@@ -131,33 +151,76 @@ Kaynaklar toplu hâlde bağlama yüklenmez. Yalnızca verilecek karar için gere
 Bağımlılığı yoktur, Python 3.9 ve üzeri yeterlidir.
 
 ```bash
-python3 scripts/analyze_turkish.py metin.txt
+AVAZ=plugins/avaz/skills/avaz
+python3 "$AVAZ/scripts/analyze_turkish.py" metin.txt
+python3 "$AVAZ/scripts/analyze_turkish.py" metin.txt --format json
+cat metin.txt | python3 "$AVAZ/scripts/analyze_turkish.py" -
 ```
 
-```bash
-python3 scripts/analyze_turkish.py metin.txt --format json
-```
+Yukarıdaki yollar depo kökünden geçerlidir. Skill içinden çağrılırken çalışma dizini genellikle kullanıcının projesidir; bu yüzden SKILL.md göreli yol değil `${CLAUDE_PLUGIN_ROOT}` (tek skill kurulumunda `${CLAUDE_SKILL_DIR}`) üzerinden mutlak yol kullanır.
+
+| Bayrak | İşlev |
+|---|---|
+| `--format json` | makine okunur çıktı; `schema_version`, `summary` ve bulgu başına `spans` içerir |
+| `--fail-on error` | o seviyede bulgu varsa 1 ile çıkar (CI için) |
+| `--max-examples N` | bulgu başına örnek cümle sayısı |
+| `--compact` | boşluksuz JSON |
+
+Çıkış kodları: `0` temiz, `1` eşik aşıldı, `2` kullanım hatası, `3` girdi okunamadı.
 
 Bulgu seviyeleri: `error` (TDK'ye göre kesin yazım hatası veya demir kural ihlali), `review` (okuma etkisi olası), `notice` (yalnızca başka belirtilerle birlikte anlamlı).
 
-Betik yazarlık puanı üretmez. Bulgu çıkmaması metnin iyi olduğunu, bulgu çıkması metnin yapay zekâ ürünü olduğunu göstermez.
+Betik yazarlık puanı üretmez. Bulgu çıkmaması metnin iyi olduğunu, bulgu çıkması metnin yapay zekâ ürünü olduğunu göstermez. Betik korunan bölgeleri göremez: özel adı, alıntıyı, kod bloğunu ve şablon değişkenini ayırt edemediği için `error` seviyesindeki bulgular bile bağlamla doğrulanmalıdır.
+
+### Test ve değerlendirme
+
+```bash
+pip install -e ".[dev]"
+pytest -q
+```
+
+İki katman var. `tests/` betiği deterministik olarak sınar: her kural için etiketli bir korpusta kesinlik ve duyarlılık kapısı, CLI sözleşmesi, altın çıktılar, ReDoS zaman kapısı ve skill paketinin bütünlüğü (frontmatter geçerli YAML mı, bağlantılar kırık mı). `evals/` ise skill'in davranışını ölçer: olgu tuzağı, alıntı koruma, konuşma çizgisi, kod bloğu, enjeksiyon, hukuki kesinlik, erozyon ve negatif tetikleme vakaları.
+
+Kural eklerken korpusa hem yakalanması hem **yakalanmaması** gereken örnekler eklenir. Kesinlik duyarlılıktan önce gelir: yanlış pozitif, doğru yazılmış bir insan metnini bozmak demektir.
 
 ### Dosya yapısı
 
+```
+.claude-plugin/marketplace.json     depo bir plugin marketplace'i
+plugins/avaz/
+├── .claude-plugin/plugin.json
+└── skills/avaz/                    kullanıcıya inen tek dizin
+    ├── SKILL.md
+    ├── references/
+    └── scripts/
+tests/  evals/  pyproject.toml  .github/    geliştirme; pakete girmez
+```
+
+Skill dizininin içeriği:
+
 | Dosya | İçerik |
 |---|---|
-| `SKILL.md` | Demir kurallar, iş akışı, kırmızı bayraklar, Türkçe çekirdek |
-| `references/turkce-dilbilgisi.md` | Çeviri kokusu, `olarak` kalıbı, vurgu ve öğe sırası, ek ve yazım tuzakları, ritim |
-| `references/ornekler.md` | Profil profil önce/sonra örnekleri |
-| `references/profiles.md` | Sekiz yazı profili ve birleşim kuralı |
+| `SKILL.md` | Demir kurallar, öncelik sırası, korunan bölgeler, iş akışı, kırmızı bayraklar |
+| `references/turkce-dilbilgisi.md` | Çeviri kokusu, `olarak` kalıbı, vurgu ve öğe sırası, ek ve yazım tuzakları, kip ve tanıklık, terim tutarlılığı, ritim |
+| `references/ornekler.md` | Profil profil önce/sonra örnekleri ve "yapılmayacak onarım" karşı örnekleri |
+| `references/profiles.md` | Dokuz yazı profili ve birleşim kuralı |
 | `references/signals.md` | Şablonlu anlatım belirtileri ve ağırlıkları |
 | `references/quality-gates.md` | Teslim öncesi altı kapı |
+| `references/teslim-ve-sinirlar.md` | Müdahale şiddeti, teslim biçimi, uzun metin, yineleme, işaretleme |
 | `references/sources.md` | Kaynak yönlendirmesi ve lisans sınırları |
 | `scripts/analyze_turkish.py` | Eşik aşan editoryal belirtileri listeler |
 
+`tests/` ve `evals/` depoda kalır, plugin paketine girmez: kullanıcının bağlam dizinine yalnızca `skills/avaz/` iner.
+
 ### Sınırlar
 
-Avaz bir yapay zekâ dedektörü değildir ve öyle kullanılamaz. Bildirdiği her belirti insan metninde de bulunabilir. Sağlık, hukuk, finans ve itibar riski taşıyan metinlerde kesinlik derecesi ve yükümlülük değiştirilmez; şüpheli ifade düzeltilmez, işaretlenir ve insan onayına bırakılır.
+Avaz bir yapay zekâ dedektörü değildir ve öyle kullanılamaz. Bildirdiği her belirti insan metninde de bulunabilir.
+
+**Dedektör atlatma aracı da değildir.** Piyasadaki "humanizer" araçlarının çoğu, metne kasıtlı kusur ekleyerek yapay zekâ dedektörlerini şaşırtmayı hedefler. Avaz'ın tasarımı bunun tam tersidir: metne kusur eklemez, olguyu korur ve neyi neden değiştirdiğini söyler. Amacı bir denetimden geçmek değil, metnin gerçekten bozuk yerlerini onarmaktır.
+
+Betiğin çıktısı bir hüküm değil, uyarıdır. Betik korunan bölgeleri (özel ad, alıntı, kod, şablon değişkeni) göremez; bu yüzden `error` seviyesindeki bulguları bile bağlamla doğrulamak gerekir.
+
+Sağlık, hukuk, finans ve itibar riski taşıyan metinlerde kesinlik derecesi ve yükümlülük değiştirilmez; şüpheli ifade düzeltilmez, işaretlenir ve insan onayına bırakılır.
 
 ### Lisans
 
@@ -178,7 +241,7 @@ The name comes from the Turkish word for a raised voice. The goal is not to fit 
 1. **It adds no facts.** No invented figure, example, claim or cause. Gaps are flagged and returned to the user, never filled.
 2. **It never claims "an AI wrote this".** No authorship verdict. It reports the observed editorial symptom, its location and its effect on reading.
 3. **Natural does not mean flawed.** No deliberate typos, random slang, emoji, exclamation marks or filler added in the name of sounding human.
-4. **No em dash (—).** Neither produced nor left in place; removed from input as well. Commas, parentheses, hyphens, colons or separate sentences instead.
+4. **No parenthetical em dash (—).** Neither produced nor left in place; removed from input as well. Commas, parentheses, hyphens, colons or separate sentences instead. A line-initial dialogue dash is a TDK rule and is preserved.
 5. **No "as X, we…" construction.** A brand, company, team or role name is never demoted to an adverbial with `olarak`; the subject is written directly.
 
 > "Aktaş Elektrik **olarak** ortaya koy**duğumuz** kalite ölçülebilir."
@@ -187,11 +250,25 @@ The name comes from the Turkish word for a raised voice. The goal is not to fit 
 
 ### Installation
 
-```bash
-git clone https://github.com/azizi2407/avaz.git ~/.claude/skills/avaz
+The repository is a plugin marketplace. Recommended:
+
+```
+/plugin marketplace add azizi2407/avaz
+/plugin install avaz@avaz
 ```
 
-Restart Claude Code. The skill appears as `avaz`.
+This gives version tracking and updates, and keeps development files (`tests/`, `evals/`, CI) out of the context directory.
+
+To use it as a bare skill, copy just the skill directory:
+
+```bash
+git clone --depth 1 https://github.com/azizi2407/avaz.git /tmp/avaz
+cp -r /tmp/avaz/plugins/avaz/skills/avaz ~/.claude/skills/avaz
+```
+
+Restart Claude Code. The skill appears as `avaz`; with a plugin install it can also be invoked as `/avaz:avaz`.
+
+> **If you previously cloned into `~/.claude/skills/avaz`:** the repository root is no longer the skill root. Remove that directory and use one of the two paths above instead of running `git pull` there.
 
 ### Usage
 
@@ -203,7 +280,7 @@ or directly:
 
 > Edit this text with avaz: …
 
-The skill does not self-trigger. It activates when called by name or when a rewrite is explicitly requested. Summarising, translating and reviewing requests leave it closed.
+The skill triggers narrowly: by name, or on an explicit request to rewrite, simplify or naturalise a Turkish text. Negative triggers in the `description` field keep it closed for summarising, translating into another language, plain spell-checking and shortening. This is a tendency, not a hard lock.
 
 ### Method
 
@@ -211,7 +288,7 @@ Avaz applies a six-step editorial procedure. The order is binding: voice work co
 
 **1. Preservation contract.** Before any edit, the untouchables are listed: proper nouns, figures, dates, quotations, product attributes, claims, moods, negations, legal wording, commands and file paths.
 
-**2. Profile selection.** One of eight profiles, or a combination, is chosen by medium, genre, audience and formality: corporate, news, social media, advertising, explanatory, technical documentation, editorial, dialogue, legal. In a combined profile the dominant one governs content and risk while the secondary governs rhythm and medium; on conflict, the risk-bearing profile wins.
+**2. Profile selection.** One of nine profiles, or a combination, is chosen by medium, genre, audience and formality: corporate, news, social media, advertising, explanatory, technical documentation, editorial, dialogue, legal. In a combined profile the dominant one governs content and risk while the secondary governs rhythm and medium; on conflict, the risk-bearing profile wins.
 
 **3. Symptom scan.** Templated-writing symptoms are weighted in three tiers:
 
@@ -261,20 +338,36 @@ Sources are never loaded into context in bulk. Only the layer needed for the dec
 No dependencies; Python 3.9 or later is enough.
 
 ```bash
-python3 scripts/analyze_turkish.py text.txt
+AVAZ=plugins/avaz/skills/avaz
+python3 "$AVAZ/scripts/analyze_turkish.py" text.txt
+python3 "$AVAZ/scripts/analyze_turkish.py" text.txt --format json
+cat text.txt | python3 "$AVAZ/scripts/analyze_turkish.py" -
 ```
 
-```bash
-python3 scripts/analyze_turkish.py text.txt --format json
-```
+Those paths are relative to the repository root. When invoked from the skill the working directory is usually the user's project, so SKILL.md resolves an absolute path through `${CLAUDE_PLUGIN_ROOT}` (or `${CLAUDE_SKILL_DIR}` for a bare skill install) rather than a relative one.
+
+`--fail-on error` exits 1 when a finding at that level exists (for CI); `--max-examples N` and `--compact` control output size. Exit codes: `0` clean, `1` threshold exceeded, `2` usage error, `3` unreadable input.
 
 Finding levels: `error` (definite spelling error per TDK, or an iron-rule violation), `review` (likely reading impact), `notice` (meaningful only alongside other symptoms).
 
-The script produces no authorship score. An empty report does not mean the text is good, and a full one does not mean the text was machine-written.
+The script produces no authorship score. An empty report does not mean the text is good, and a full one does not mean the text was machine-written. The script cannot see protected regions — proper nouns, quotations, code blocks, template variables — so even `error` findings must be confirmed against context.
+
+### Tests and evaluation
+
+```bash
+pip install -e ".[dev]"
+pytest -q
+```
+
+Two layers. `tests/` checks the script deterministically: per-rule precision and recall gates over a labelled corpus, the CLI contract, golden outputs, a ReDoS timing gate, and the integrity of the skill package itself. `evals/` measures the skill's behaviour: fact-injection traps, quotation and code-block preservation, dialogue dashes, prompt injection, legal certainty, erosion across repeated passes, and negative triggering.
 
 ### Limits
 
-Avaz is not an AI detector and cannot be used as one. Every symptom it reports can also occur in human writing. In medical, legal, financial and reputation-sensitive texts it never alters degree of certainty or obligation; a doubtful phrase is flagged for human review rather than corrected.
+Avaz is not an AI detector and cannot be used as one. Every symptom it reports can also occur in human writing.
+
+**Nor is it a detector-bypass tool.** Most "humanizer" products aim to fool AI detectors by injecting deliberate flaws. Avaz is built the other way round: it adds no flaws, preserves the facts, and states what it changed and why. The goal is not to pass an audit but to repair what is genuinely broken.
+
+In medical, legal, financial and reputation-sensitive texts it never alters degree of certainty or obligation; a doubtful phrase is flagged for human review rather than corrected.
 
 ### License
 

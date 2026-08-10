@@ -1,0 +1,50 @@
+{
+  "statistics": {
+    "characters": 506,
+    "words": 63,
+    "paragraphs": 3,
+    "sentences": 5,
+    "mean_sentence_words": 12.6,
+    "sentence_length_std": 1.02,
+    "sentence_length_cv": 0.081
+  },
+  "summary": {
+    "error": 1,
+    "review": 5,
+    "notice": 2
+  },
+  "findings": [
+    [
+      "baglac-virgul",
+      4
+    ],
+    [
+      "maktadir-density",
+      4
+    ],
+    [
+      "meta-framing",
+      3
+    ],
+    [
+      "olarak-kalibi",
+      1
+    ],
+    [
+      "transition-cluster",
+      4
+    ],
+    [
+      "translationese",
+      4
+    ],
+    [
+      "uniform-sentence-length",
+      5
+    ],
+    [
+      "unsupported-evaluation",
+      3
+    ]
+  ]
+}
