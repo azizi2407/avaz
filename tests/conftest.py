@@ -5,7 +5,9 @@ from pathlib import Path
 import pytest
 
 REPO = Path(__file__).resolve().parents[1]
-SCRIPT = REPO / "scripts" / "analyze_turkish.py"
+PLUGIN = REPO / "plugins" / "avaz"
+SKILL = PLUGIN / "skills" / "avaz"
+SCRIPT = SKILL / "scripts" / "analyze_turkish.py"
 
 
 @pytest.fixture(scope="session")
@@ -26,3 +28,14 @@ def script_path():
 @pytest.fixture(scope="session")
 def repo():
     return REPO
+
+
+@pytest.fixture(scope="session")
+def skill_dir():
+    """Skill kökü: SKILL.md, references/ ve scripts/ burada."""
+    return SKILL
+
+
+@pytest.fixture(scope="session")
+def plugin_dir():
+    return PLUGIN

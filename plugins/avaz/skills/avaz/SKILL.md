@@ -154,11 +154,11 @@ Sağlık, hukuk, finans ve itibar riski taşıyan metinlerde doğal söyleyiş u
 Betik bu skill'in dizinindedir; çalışma dizini genellikle kullanıcının projesidir. **Göreli yolla çağırma**, kırılır. Yolu şöyle çöz:
 
 ```bash
-# Skill olarak kuruluysa:
-python3 "${CLAUDE_SKILL_DIR}/scripts/analyze_turkish.py" metin.txt
-
-# Plugin olarak kuruluysa:
+# Plugin olarak kuruluysa (olağan yol):
 python3 "${CLAUDE_PLUGIN_ROOT}/skills/avaz/scripts/analyze_turkish.py" metin.txt
+
+# Tek skill olarak kopyalandıysa:
+python3 "${CLAUDE_SKILL_DIR}/scripts/analyze_turkish.py" metin.txt
 ```
 
 Değişken yerine konmuyorsa yollar bu dosyanın bulunduğu dizine görelidir; elle çöz.

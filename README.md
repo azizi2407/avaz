@@ -35,11 +35,25 @@ Kural 4 ve 5 biçim kurallarıdır. Bir alıntıyı değiştirmenin, bir olguyu 
 
 ### Kurulum
 
-```bash
-git clone https://github.com/azizi2407/avaz.git ~/.claude/skills/avaz
+Depo bir plugin marketplace'idir. Önerilen yol:
+
+```
+/plugin marketplace add azizi2407/avaz
+/plugin install avaz@avaz
 ```
 
-Claude Code'u yeniden başlat. Skill `avaz` adıyla görünür.
+Bu yol sürüm takibi ve güncelleme sağlar; geliştirme dosyaları (`tests/`, `evals/`, CI) bağlam dizinine inmez.
+
+Tek skill olarak kullanmak isterseniz yalnızca skill dizinini kopyalayın:
+
+```bash
+git clone --depth 1 https://github.com/azizi2407/avaz.git /tmp/avaz
+cp -r /tmp/avaz/plugins/avaz/skills/avaz ~/.claude/skills/avaz
+```
+
+Claude Code'u yeniden başlatın. Skill `avaz` adıyla görünür; plugin kurulumunda `/avaz:avaz` olarak da çağrılabilir.
+
+> **Daha önce `~/.claude/skills/avaz` içine klonladıysanız:** depo kökü artık skill kökü değil. O dizinde `git pull` yapmak yerine dizini silip yukarıdaki iki yoldan birini uygulayın.
 
 ### Kullanım
 
@@ -137,12 +151,13 @@ Kaynaklar toplu hâlde bağlama yüklenmez. Yalnızca verilecek karar için gere
 Bağımlılığı yoktur, Python 3.9 ve üzeri yeterlidir.
 
 ```bash
-python3 scripts/analyze_turkish.py metin.txt
-python3 scripts/analyze_turkish.py metin.txt --format json
-cat metin.txt | python3 scripts/analyze_turkish.py -
+AVAZ=plugins/avaz/skills/avaz
+python3 "$AVAZ/scripts/analyze_turkish.py" metin.txt
+python3 "$AVAZ/scripts/analyze_turkish.py" metin.txt --format json
+cat metin.txt | python3 "$AVAZ/scripts/analyze_turkish.py" -
 ```
 
-Skill içinden çağrılırken çalışma dizini genellikle kullanıcının projesidir; bu yüzden SKILL.md göreli yol değil `${CLAUDE_SKILL_DIR}` (ya da plugin kurulumunda `${CLAUDE_PLUGIN_ROOT}`) üzerinden mutlak yol kullanır.
+Yukarıdaki yollar depo kökünden geçerlidir. Skill içinden çağrılırken çalışma dizini genellikle kullanıcının projesidir; bu yüzden SKILL.md göreli yol değil `${CLAUDE_PLUGIN_ROOT}` (tek skill kurulumunda `${CLAUDE_SKILL_DIR}`) üzerinden mutlak yol kullanır.
 
 | Bayrak | İşlev |
 |---|---|
@@ -170,18 +185,32 @@ Kural eklerken korpusa hem yakalanması hem **yakalanmaması** gereken örnekler
 
 ### Dosya yapısı
 
+```
+.claude-plugin/marketplace.json     depo bir plugin marketplace'i
+plugins/avaz/
+├── .claude-plugin/plugin.json
+└── skills/avaz/                    kullanıcıya inen tek dizin
+    ├── SKILL.md
+    ├── references/
+    └── scripts/
+tests/  evals/  pyproject.toml  .github/    geliştirme; pakete girmez
+```
+
+Skill dizininin içeriği:
+
 | Dosya | İçerik |
 |---|---|
-| `SKILL.md` | Demir kurallar, iş akışı, kırmızı bayraklar, Türkçe çekirdek |
-| `references/turkce-dilbilgisi.md` | Çeviri kokusu, `olarak` kalıbı, vurgu ve öğe sırası, ek ve yazım tuzakları, ritim |
-| `references/ornekler.md` | Profil profil önce/sonra örnekleri |
+| `SKILL.md` | Demir kurallar, öncelik sırası, korunan bölgeler, iş akışı, kırmızı bayraklar |
+| `references/turkce-dilbilgisi.md` | Çeviri kokusu, `olarak` kalıbı, vurgu ve öğe sırası, ek ve yazım tuzakları, kip ve tanıklık, terim tutarlılığı, ritim |
+| `references/ornekler.md` | Profil profil önce/sonra örnekleri ve "yapılmayacak onarım" karşı örnekleri |
 | `references/profiles.md` | Dokuz yazı profili ve birleşim kuralı |
 | `references/signals.md` | Şablonlu anlatım belirtileri ve ağırlıkları |
 | `references/quality-gates.md` | Teslim öncesi altı kapı |
 | `references/teslim-ve-sinirlar.md` | Müdahale şiddeti, teslim biçimi, uzun metin, yineleme, işaretleme |
 | `references/sources.md` | Kaynak yönlendirmesi ve lisans sınırları |
 | `scripts/analyze_turkish.py` | Eşik aşan editoryal belirtileri listeler |
-| `tests/`, `evals/` | Deterministik testler ve davranışsal değerlendirme vakaları |
+
+`tests/` ve `evals/` depoda kalır, plugin paketine girmez: kullanıcının bağlam dizinine yalnızca `skills/avaz/` iner.
 
 ### Sınırlar
 
@@ -221,11 +250,25 @@ The name comes from the Turkish word for a raised voice. The goal is not to fit 
 
 ### Installation
 
-```bash
-git clone https://github.com/azizi2407/avaz.git ~/.claude/skills/avaz
+The repository is a plugin marketplace. Recommended:
+
+```
+/plugin marketplace add azizi2407/avaz
+/plugin install avaz@avaz
 ```
 
-Restart Claude Code. The skill appears as `avaz`.
+This gives version tracking and updates, and keeps development files (`tests/`, `evals/`, CI) out of the context directory.
+
+To use it as a bare skill, copy just the skill directory:
+
+```bash
+git clone --depth 1 https://github.com/azizi2407/avaz.git /tmp/avaz
+cp -r /tmp/avaz/plugins/avaz/skills/avaz ~/.claude/skills/avaz
+```
+
+Restart Claude Code. The skill appears as `avaz`; with a plugin install it can also be invoked as `/avaz:avaz`.
+
+> **If you previously cloned into `~/.claude/skills/avaz`:** the repository root is no longer the skill root. Remove that directory and use one of the two paths above instead of running `git pull` there.
 
 ### Usage
 
@@ -295,12 +338,13 @@ Sources are never loaded into context in bulk. Only the layer needed for the dec
 No dependencies; Python 3.9 or later is enough.
 
 ```bash
-python3 scripts/analyze_turkish.py text.txt
-python3 scripts/analyze_turkish.py text.txt --format json
-cat text.txt | python3 scripts/analyze_turkish.py -
+AVAZ=plugins/avaz/skills/avaz
+python3 "$AVAZ/scripts/analyze_turkish.py" text.txt
+python3 "$AVAZ/scripts/analyze_turkish.py" text.txt --format json
+cat text.txt | python3 "$AVAZ/scripts/analyze_turkish.py" -
 ```
 
-When invoked from the skill the working directory is usually the user's project, so SKILL.md resolves an absolute path through `${CLAUDE_SKILL_DIR}` (or `${CLAUDE_PLUGIN_ROOT}` for a plugin install) rather than a relative one.
+Those paths are relative to the repository root. When invoked from the skill the working directory is usually the user's project, so SKILL.md resolves an absolute path through `${CLAUDE_PLUGIN_ROOT}` (or `${CLAUDE_SKILL_DIR}` for a bare skill install) rather than a relative one.
 
 `--fail-on error` exits 1 when a finding at that level exists (for CI); `--max-examples N` and `--compact` control output size. Exit codes: `0` clean, `1` threshold exceeded, `2` usage error, `3` unreadable input.
 
