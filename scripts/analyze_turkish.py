@@ -59,15 +59,25 @@ PARAGRAPH_STARTERS = (
 
 # --- Çeviri kokusu: İngilizce sözdiziminin Türkçe sözcüklerle kurulması. ---
 TRANSLATIONESE_PATTERNS = {
-    "sahip-olmak": re.compile(r"\bsahip\s+ol[a-zçğıöşüâîû]*", re.IGNORECASE),
+    # "sahip ol-" kadar "-e sahip" sıfat öbeği de aranır: SKILL.md'nin amiral
+    # örneği ("yüksek performansa sahip motor") yardımcı fiil içermez.
+    "sahip-olmak": re.compile(
+        r"\b[a-zçğıöşüâîû]+[ae]\s+sahip\b|\bsahip\s+ol[a-zçğıöşüâîû]*",
+        re.IGNORECASE,
+    ),
     "gerçekleştirmek": re.compile(r"\bgerçekleştir[a-zçğıöşüâîû]*", re.IGNORECASE),
     "sağlamak": re.compile(
         r"\bsağla(?:mak|mayı|maya|maktadır|makta|nmak|nması|nmasına|nmakta|nmaktadır"
         r"|yan|yarak|nan|r|nır|dı|ndı|mıştır|nmıştır)\b",
         re.IGNORECASE,
     ),
-    "yer-almak": re.compile(r"\byer\s+al[a-zçğıöşüâîû]*", re.IGNORECASE),
-    "olan-fazlalığı": re.compile(r"\b(?:olmuş\s+olan|olmakta\s+olan|bulunmakta\s+olan)\b", re.IGNORECASE),
+    # (?!t) "yer altı / yer altında" adını dışarıda bırakır; fiil çekimlerinin
+    # hiçbiri "al"dan sonra t ile devam etmez.
+    "yer-almak": re.compile(r"\byer\s+al(?!t)[a-zçğıöşüâîû]*", re.IGNORECASE),
+    "olan-fazlalığı": re.compile(
+        r"\b(?:olmuş\s+olan|olmakta\s+olan|bulunmakta\s+olan|[a-zçğıöşüâîû]+m[ıiuü]ş\s+olan)\b",
+        re.IGNORECASE,
+    ),
     "ilgec-yigini": re.compile(r"\b(?:ile\s+ilgili\s+olarak|açısından|konusunda|bazında|nezdinde)\b", re.IGNORECASE),
 }
 
@@ -77,12 +87,35 @@ PASSIVE_STEMS_RE = re.compile(
     re.IGNORECASE,
 )
 MAKTADIR_RE = re.compile(r"\b[a-zçğıöşüâîû]+m[ae]kt[ae]d[ıiuü]r(?:lar|ler)?\b", re.IGNORECASE)
+
+# -DIr yalnızca kopula değildir: ettirgen/emir eki ("indir", "getir") ve t/d ile
+# biten gövdelerin geniş zamanı ("unutur", "öğretir") aynı sesle biter. Bunlar
+# elenmezse emir kipiyle yazılmış her kurulum talimatı kopula zinciri sanılır.
+NON_COPULA_WORDS = (
+    # ettirgen / emir
+    "artır", "bildir", "bitir", "buldur", "coştur", "değiştir", "doldur", "dondur",
+    "geçir", "getir", "giydir", "götür", "indir", "kaldır", "karıştır", "oluştur",
+    "otur", "öldür", "sıkıştır", "ulaştır", "uyandır", "yaptır", "yatır", "yetiştir",
+    # t/d ile biten gövdelerin geniş zamanı
+    "unutur", "artırır", "azaltır", "bitirir", "getirir", "öğretir", "yatırır",
+    # ad
+    "satır", "çadır", "hatır", "katır", "kadir",
+)
 # -maktadır ayrı bir bulgu olduğu için kopula zincirinden çıkarılır.
-COPULA_END_RE = re.compile(r"\b[a-zçğıöşüâîû]+(?:(?<!m[ae]kt[ae])d|t)[ıiuü]r(?:lar|ler)?\s*[.!?]")
+COPULA_END_RE = re.compile(
+    r"\b(?!(?:" + "|".join(NON_COPULA_WORDS) + r")(?:lar|ler)?\s*[.!?])"
+    r"[a-zçğıöşüâîû]{2,}(?:(?<!m[ae]kt[ae])d|t)[ıiuü]r(?:lar|ler)?\s*[.!?]",
+    re.IGNORECASE,
+)
 CONTRAST_RE = re.compile(r"\b(?:sadece|yalnızca)\b[^.!?]{0,80}\bdeğil\b", re.IGNORECASE)
 
 # --- Yasak kalıplar (demir kural 4 ve 5). ---
-EM_DASH_RE = re.compile(r"—")
+# Yasak, boşluklu ara söz çizgisidir; varyantları da kapsar çünkü en dash (–)
+# LLM metinlerinde em dash kadar sık geçer ve aynı işlevi üstlenir.
+EM_DASH_RE = re.compile(r"[‒–—―]")
+# Satır başındaki çizgi TDK'de konuşma çizgisidir ve korunur (bkz. demir kural 4
+# istisnası); sayımdan düşülür.
+DIALOGUE_DASH_RE = re.compile(r"(?m)^[ \t>]*[‒–—―][ \t]")
 
 # Yalnızca yüksek özgüllüklü birinci şahıs ekleri; "artık", "balık" gibi
 # sözcüklere takılmamak için genel -dık/-dik dışarıda bırakıldı.
@@ -90,25 +123,53 @@ FIRST_PERSON = (
     r"(?:[ıiuü]yoruz|[ıiuü]yorum|[ae]cağız|[ae]ceğiz|[ae]cağım|[ae]ceğim"
     r"|[dt][ıiuü]ğ[ıiuü]m[ıiuü]z|[dt][ıiuü]ğ[ıiuü]m|[ae]r[ıi]z|m[ıiuü]ş[ıiuü]z)"
 )
+# Birinci çoğul iyelik ("sorumluluğumuz"), biz-anlatımının çekimsiz biçimidir.
+FIRST_PERSON_POSSESSIVE = r"[ıiuü]m[ıiuü]z"
+
+# Yasak, özneyi gizleyen kalıptır. "olarak" belirteç kurduğunda ya da nesneye
+# sıfat verdiğinde özne yerinde durur; bu kullanımlar turkce-dilbilgisi.md § 1.1
+# son paragrafında açıkça serbest bırakılmıştır.
+OLARAK_BELIRTEC = (
+    "sonuç", "örnek", "misal", "genel", "ek", "özet", "kısa", "uzun", "ayrıntılı",
+    "detaylı", "tam", "doğrudan", "dolaylı", "yedek", "alternatif", "geçici",
+    "kalıcı", "öncelikli", "ilk", "son", "karşılık", "temel", "açık", "net",
+    "aynı", "farklı", "ayrı", "toplu", "bireysel", "hediye", "ödül", "cevap",
+    "yanıt", "tepki", "başlangıç", "varsayılan", "standart", "gönüllü", "zorunlu",
+)
+_OLARAK_MUAF = r"(?!(?:" + "|".join(OLARAK_BELIRTEC) + r")\s+olarak\b)"
+
 OLARAK_BIZ_RE = re.compile(
-    rf"\b[\wçğıöşüâîû'’]+\s+olarak\b[^.!?]{{0,120}}?[a-zçğıöşüâîû]+{FIRST_PERSON}\b",
+    rf"\b{_OLARAK_MUAF}[\wçğıöşüâîû'’]+\s+olarak\b"
+    rf"[^.!?]{{0,120}}?[a-zçğıöşüâîû]+{FIRST_PERSON}\b",
     re.IGNORECASE,
 )
+# Rol adı tek başına yeterli değildir: kural "rol adı + olarak + biz-anlatımı"
+# der. Koşulsuz desen "Şirket olarak tescil edildi" gibi üçüncü şahıs
+# sınıflandırma cümlelerini de yakalıyordu.
 OLARAK_ROL_RE = re.compile(
     r"\b(?:firma|marka|şirket|ekip|kurum|kuruluş|aile|takım|yönetim|holding"
-    r"|grup|banka|ajans|kadro|çalışanlar|hepimiz)\s+olarak\b",
+    r"|grup|banka|ajans|kadro|çalışanlar|hepimiz)\s+olarak\b"
+    rf"[^.!?]{{0,120}}?(?:\bbiz\b|[a-zçğıöşüâîû]+(?:{FIRST_PERSON}\b|{FIRST_PERSON_POSSESSIVE}))",
     re.IGNORECASE,
 )
 
 # --- Kesin yazım hataları (TDK). ---
+# "bir çok/kaç" ancak arkasından bileşik sıfat gelmiyorsa birleşik yazılır.
+_BILESIK_SIFAT = (
+    r"(?!\s+(?:yönlü|boyutlu|taraflı|anlamlı|amaçlı|katmanlı|aşamalı|basamaklı"
+    r"|yıllık|aylık|haftalık|günlük|kişilik|parçalı)\b)"
+)
+
 SPELLING_RULES = (
     (re.compile(r"\bherşey[a-zçğıöşü]*\b", re.IGNORECASE), "her şey"),
     (re.compile(r"\bbirşey[a-zçğıöşü]*\b", re.IGNORECASE), "bir şey"),
     (re.compile(r"\bhiçbirşey[a-zçğıöşü]*\b", re.IGNORECASE), "hiçbir şey"),
     (re.compile(r"\bhiç\s+bir\b", re.IGNORECASE), "hiçbir"),
-    (re.compile(r"\bbir\s+kaç\b", re.IGNORECASE), "birkaç"),
-    (re.compile(r"\bbir\s+çok\b", re.IGNORECASE), "birçok"),
-    (re.compile(r"\byada\b", re.IGNORECASE), "ya da"),
+    # "bir çok yönlü sorun" = sayı sıfatı + bileşik sıfat; birleşik yazım hatası değil.
+    (re.compile(rf"\bbir\s+kaç\b{_BILESIK_SIFAT}", re.IGNORECASE), "birkaç"),
+    (re.compile(rf"\bbir\s+çok\b{_BILESIK_SIFAT}", re.IGNORECASE), "birçok"),
+    # Büyük harfli "Yada" bir özel addır (Yada dağı); IGNORECASE bilerek yok.
+    (re.compile(r"\byada\b"), "ya da"),
     (re.compile(r"\bherkez\b", re.IGNORECASE), "herkes"),
     (re.compile(r"\byalnış[a-zçğıöşü]*\b", re.IGNORECASE), "yanlış"),
     (re.compile(r"\byanlız[a-zçğıöşü]*\b", re.IGNORECASE), "yalnız"),
@@ -327,26 +388,36 @@ def analyze(text: str) -> dict[str, object]:
             )
         )
 
-    # 12. Yasak: uzun çizgi (demir kural 4)
-    em_dash_count = len(EM_DASH_RE.findall(text))
-    if em_dash_count:
+    # 12. Yasak: ara söz uzun çizgisi (demir kural 4)
+    # Satır başındaki konuşma çizgisi TDK kuralıdır; sayımdan düşülür.
+    dialogue_count = len(DIALOGUE_DASH_RE.findall(text))
+    em_dash_count = len(EM_DASH_RE.findall(text)) - dialogue_count
+    if em_dash_count > 0:
+        # Örneklerde yalnızca ara söz kullanımı gösterilir; satır başındaki
+        # konuşma çizgisi korunacağı için onu örnek olarak sunmak yanıltır.
+        arasoz = [s for s in sentences if EM_DASH_RE.search(DIALOGUE_DASH_RE.sub("", s))]
         findings.append(
             finding(
                 "em-dash", "error", em_dash_count,
-                "Uzun çizgi yasak. Virgül, parantez, kısa çizgi (-), iki nokta veya ayrı cümle ile değiştir.",
-                regex_examples(sentences, [EM_DASH_RE]),
+                "Ara söz uzun çizgisi yasak. Virgül, parantez, kısa çizgi (-), iki nokta veya ayrı cümle "
+                "ile değiştir. Satır başındaki konuşma çizgisi bu sayıma dahil değildir; "
+                "alıntı ve kod içindeki çizgiye dokunma.",
+                [s[:220] for s in arasoz[:3]],
             )
         )
 
-    # 13. Yasak: "X olarak biz…" kalıbı (demir kural 5)
+    # 13. "X olarak biz…" kalıbı (demir kural 5)
+    # Seviye 'review': betik alıntıyı, karşıtlık odağını ve hukuki taraf sıfatını
+    # göremez; bunlar kuralın tanımlı istisnalarıdır (SKILL.md § Demir kural 5).
     olarak_sentences = [s for s in sentences if OLARAK_BIZ_RE.search(s) or OLARAK_ROL_RE.search(s)]
     if olarak_sentences:
         findings.append(
             finding(
-                "olarak-kalibi", "error", len(olarak_sentences),
-                "Marka/kurum/ekip adı + 'olarak' + biz-anlatımı yasak. Özneyi doğrudan yaz: "
-                "'X olarak yaptığımız' → 'X'in yaptığı'.",
-                regex_examples(sentences, [OLARAK_BIZ_RE, OLARAK_ROL_RE]),
+                "olarak-kalibi", "review", len(olarak_sentences),
+                "Marka/kurum/ekip adı + 'olarak' + biz-anlatımı. Özneyi doğrudan yaz: "
+                "'X olarak yaptığımız' → 'X'in yaptığı'. Alıntı içindeyse, karşıtlık odağı taşıyorsa "
+                "veya hukuki taraf sıfatı bildiriyorsa dokunma.",
+                [s[:220] for s in olarak_sentences[:3]],
             )
         )
 

@@ -45,7 +45,15 @@ Kurumsal Türkçenin en yaygın klişesi. Marka, kurum, ekip veya rol adı `olar
 
 Biz-anlatımının kendisi yasak değildir; yasak olan `olarak` ile kurulan bu kalıptır. "Kaliteyi ölçüyoruz" serbesttir.
 
-`olarak` sözcüğü, cümlenin öznesini gizlemediği yerlerde kalır: "Müdür olarak atandı", "Yedek olarak sakla", "Örnek olarak şunu verelim".
+`olarak` sözcüğü, cümlenin öznesini gizlemediği yerlerde kalır: "Müdür olarak atandı", "Yedek olarak sakla", "Örnek olarak şunu verelim". Belirteç kuran kullanımlar (`sonuç olarak`, `genel olarak`, `ayrıntılı olarak`, `ek olarak`) biz-anlatımıyla birlikte gelse bile serbesttir: "Sonuç olarak bu yöntemi öneriyoruz" kurulabilir.
+
+**Üç zorunlu istisna.** Kalıp şu durumlarda **korunur**, onarılmaz:
+
+1. **Alıntı ve doğrudan konuşma içinde.** `Müdür, "Aktaş Elektrik olarak bu yatırımı tamamladık" dedi.` Tırnak içini onarmak, söylenmemiş bir cümleyi tırnak içinde bırakmaktır: olgu hatası, üslup düzeltmesi değil.
+2. **Karşıtlık odağı taşıdığında.** "Şirket olarak değil, kişi olarak dava açtık." Buradaki `olarak` odak taşıyıcıdır; kaldırılırsa cümlenin anlamı gider.
+3. **Hukuki veya resmî taraf sıfatı bildirdiğinde.** "Yüklenici olarak taahhüt ederiz", "Vekil olarak beyan ederiz." Taraf sıfatı hukuken işlevseldir; silinmesi hukuki etkiyi değiştirir.
+
+**Onarım yolu 1'in yan etkisi.** "X olarak yaptığımız" → "X'in yaptığı" dönüşümü kişiyi birinci çoğuldan üçüncü tekile kaydırır. Metnin geri kalanı birinci çoğulsa paragraf içinde kişi tutarsızlığı doğar; o durumda yol 2 veya 3'ü kullan.
 
 ## 2. Vurgu ve öğe sırası
 
@@ -107,12 +115,16 @@ Anlam ayırt ediyorsa yaz: kâr (fayda) / kar (yağış), hâlâ / hala (teyze),
 ### Noktalama
 
 - Türkçede seri virgülü yok: "A, B ve C".
-- **Uzun çizgi (em dash) yasaktır.** Ne üret, ne bırak. Girdide varsa temizle.
+- **Ara söz uzun çizgisi (em dash) yasaktır.** Ne üret, ne bırak. Girdide varsa temizle.
   - Ara söz: virgül, parantez veya kısa çizgi (-).
   - Açıklama, sonuç, liste girişi: iki nokta.
   - Zıtlık veya kopuş: nokta ile ayrı cümle, ya da noktalı virgül.
   - Aralık: kısa çizgi (2020-2024, s. 15-32).
-  - Boşluklu uzun çizgi İngilizce tipografisidir ve LLM metinlerinin en görünür parmak izidir. Türkçe yazım kılavuzunda ara söz işareti değildir.
+  - Boşluklu uzun çizgi İngilizce tipografisidir ve LLM metinlerinin en görünür parmak izidir. Türkçe yazım kılavuzunda **ara söz** işareti değildir.
+  - En dash (–), yatay çizgi (―) veya çift kısa çizgi (--) ile ikame etmek kaçıştır; işlevi Türkçe noktalamayla karşıla.
+- **Konuşma çizgisi yasak değildir, korunur.** TDK'de işaretin adı zaten "Çizgi (—)" ve birincil işlevi budur: satır başında konuşmaları göstermek, oyunlarda konuşanın adından sonra gelmek. Diyalog metninde bu çizgiyi silmek karakter ayrımını yok eder.
+  - Yasak olan **satır içi, boşluklu ara söz** kullanımıdır: "Rapor — ki uzundu — teslim edildi."
+  - Korunan **satır başı** kullanımıdır: "— Nereye gidiyorsun?"
 - Alıntı içindeki noktalama alıntının kendisine aittir; anlatıcının cümlesine karışmamalı.
 - İki nokta, açıklama ya da liste gerçekten geliyorsa konur; süs olarak değil.
 
