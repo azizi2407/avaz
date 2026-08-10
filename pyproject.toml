@@ -1,14 +1,6 @@
-[project]
-name = "avaz-tools"
-version = "1.1.0"
-description = "Avaz skill'inin çözümleme betiği ve testleri"
-readme = "README.md"
-requires-python = ">=3.9"
-license = { text = "MIT" }
-dependencies = []
-
-[project.optional-dependencies]
-dev = ["pytest>=8", "pyyaml>=6", "ruff>=0.6"]
+# Bu depo bir Claude Code plugin'idir, bir Python dağıtımı değil: pip ile
+# kurulacak bir paket içermez. Dosya yalnızca araç yapılandırması taşır.
+# Geliştirme bağımlılıkları requirements-dev.txt içinde.
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

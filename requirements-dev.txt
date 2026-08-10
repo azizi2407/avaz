@@ -1,0 +1,5 @@
+# Yalnızca geliştirme ve CI için. Skill'in kendisinin bağımlılığı yoktur;
+# scripts/analyze_turkish.py salt standart kütüphane kullanır.
+pytest>=8
+pyyaml>=6
+ruff>=0.6

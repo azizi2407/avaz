@@ -10,7 +10,7 @@
 ## Deterministik katman
 
 ```bash
-pip install -e ".[dev]"
+pip install -r requirements-dev.txt
 pytest -q
 ```
 
