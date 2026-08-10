@@ -1,0 +1,22 @@
+{
+  "statistics": {
+    "characters": 186,
+    "words": 23,
+    "paragraphs": 3,
+    "sentences": 4,
+    "mean_sentence_words": 5.75,
+    "sentence_length_std": 1.92,
+    "sentence_length_cv": 0.334
+  },
+  "summary": {
+    "error": 1,
+    "review": 0,
+    "notice": 0
+  },
+  "findings": [
+    [
+      "em-dash",
+      1
+    ]
+  ]
+}

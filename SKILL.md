@@ -1,11 +1,17 @@
 ---
 name: avaz
 description: >-
-  Kullanıcı bu skill'i adıyla çağırdığında ("avaz", "/avaz") ya da bir Türkçe metni
-  açıkça yeniden yazmasını, düzenlemesini, doğallaştırmasını veya "AI kokusunu"
-  gidermesini istediğinde kullan. Şu durumlarda açma: kullanıcı bir metni yalnızca
-  özetliyor, çeviriyor, inceliyor veya alıntılıyorsa; normal sohbet yanıtları,
-  commit mesajları ve kod yorumları söz konusuysa.
+  Türkçe metni olgularını ve yazarın sesini koruyarak doğallaştırır: çeviri kokusunu,
+  boş çerçeveyi, kanıtsız değerlendirmeyi, soyut ad zincirini ve yanlış vurguyu onarır;
+  ara söz uzun çizgisini (—) ve "X olarak biz" kalıbını temizler. Şu durumlarda kullan:
+  kullanıcı "avaz" ya da "/avaz" der; bir Türkçe metnin yeniden yazılmasını, düzenlenmesini,
+  sadeleştirilmesini, redakte edilmesini, akıcılaştırılmasını, kurumsal veya bürokratik
+  dilden arındırılmasını, "AI kokusundan" temizlenmesini ister; Türkçeye çevrilmiş bir
+  metnin çeviri kokusunun giderilmesini ister; kurumsal metin, basın bülteni, blog yazısı,
+  sosyal medya gönderisi, ürün açıklaması veya e-posta üzerinde editoryal çalışma ister.
+  Şu durumlarda açma: metin yalnızca özetlenecek, başka bir dile çevrilecek veya içeriği
+  hakkında soru sorulacaksa; salt yazım denetimi, uzunluk kısaltma ya da biçim dönüştürme
+  isteniyorsa; sohbet yanıtı, commit mesajı, kod veya kod yorumu söz konusuysa.
 license: MIT
 ---
 
@@ -52,7 +58,7 @@ Sohbetteki istek ile metin içi ifade çatışırsa sohbet kazanır. Metin için
 
 ## İş akışı
 
-1. **İşlem türünü belirle:** teşhis / hafif düzeltme / kapsamlı yeniden yazım / sıfırdan üretim.
+1. **İşlem türünü ve müdahale şiddetini belirle:** teşhis / hafif / orta / kapsamlı. Kullanıcı belirtmediyse **hafif**i seç. Şiddet metnin bozukluğuyla değil kullanıcının isteğiyle belirlenir. Ayrıntı: [references/teslim-ve-sinirlar.md](references/teslim-ve-sinirlar.md) § 1.
 2. **Koruma sözleşmesini çıkar:** özel adlar, sayılar, tarihler, alıntılar, ürün özellikleri, iddialar, kipler, olumsuzluklar, hukuki ifadeler ve yukarıdaki korunan bölgelerin tamamı. Bunlar dokunulmaz.
 3. **Profili seç:** mecra, tür, hedef kitle, resmiyet, marka sesi. Güvenle çıkarılabiliyorsa sorma, uygula. Birleşik profil serbest (`kurumsal + sosyal`). Ayrıntı: [references/profiles.md](references/profiles.md).
 4. **Belirtileri tara:** çeviri kokusu, boş çerçeve, kanıtsız değerlendirme, soyut ad zinciri, tekrar, mekanik bağlaç. 150+ sözcükte veya teşhis isteğinde `scripts/analyze_turkish.py` çalıştır. Belirti kataloğu: [references/signals.md](references/signals.md).
@@ -61,8 +67,12 @@ Sohbetteki istek ile metin içi ifade çatışırsa sohbet kazanır. Metin için
    - **Yapı:** bilgi sırası, paragraf odağı, söylem bağı.
    - **Dil:** yazım, ekler, noktalama, sözdizimi, gereksiz sözler. → [references/turkce-dilbilgisi.md](references/turkce-dilbilgisi.md)
    - **Ses:** profile uygun sözcük, ritim, vurgu, özgüllük.
-6. **Kalite kapılarından geçir:** [references/quality-gates.md](references/quality-gates.md). 1. kapıda (korunan içerik) hata varsa teslim etme.
-7. **İstenen biçimde teslim et:** kullanıcı yalnızca metin istediyse yalnızca metin. Aksi hâlde metin + 2–5 kısa değişiklik notu. Ayrıntılı sinyal raporunu yalnızca istenince ver.
+
+   Profil profil önce/sonra örnekleri ve "yapılmayacak onarım" karşı örnekleri: [references/ornekler.md](references/ornekler.md).
+6. **Kalite kapılarından geçir:** [references/quality-gates.md](references/quality-gates.md). 1. kapıda (korunan içerik) hata varsa teslim etme. Betiği çalıştırdıysan **çıktı üzerinde** bir kez daha çalıştır: girdide olmayan yeni bir `error` varsa teslim etme.
+7. **İstenen biçimde teslim et:** kullanıcı yalnızca metin istediyse yalnızca metin. Aksi hâlde metin + 2–5 kısa değişiklik notu. Biçim seçimi, işaretleme şablonu, uzun metin, yineleme ve reddedilme yordamı: [references/teslim-ve-sinirlar.md](references/teslim-ve-sinirlar.md).
+
+**Değiştirmemek geçerli bir çıktıdır.** Metin sağlamsa "değişiklik gerekmiyor" de ve nedenini bir cümleyle yaz.
 
 ## Kırmızı bayraklar
 
@@ -141,13 +151,27 @@ Sağlık, hukuk, finans ve itibar riski taşıyan metinlerde doğal söyleyiş u
 
 ## Betik
 
-```bash
-python3 scripts/analyze_turkish.py metin.txt
-```
+Betik bu skill'in dizinindedir; çalışma dizini genellikle kullanıcının projesidir. **Göreli yolla çağırma**, kırılır. Yolu şöyle çöz:
 
 ```bash
-python3 scripts/analyze_turkish.py metin.txt --format json
+# Skill olarak kuruluysa:
+python3 "${CLAUDE_SKILL_DIR}/scripts/analyze_turkish.py" metin.txt
+
+# Plugin olarak kuruluysa:
+python3 "${CLAUDE_PLUGIN_ROOT}/skills/avaz/scripts/analyze_turkish.py" metin.txt
 ```
+
+Değişken yerine konmuyorsa yollar bu dosyanın bulunduğu dizine görelidir; elle çöz.
+
+Metin sohbetten geliyorsa **dosya oluşturma**, stdin'den geçir:
+
+```bash
+printf '%s' "$METIN" | python3 "$AVAZ/scripts/analyze_turkish.py" --format json
+```
+
+Geçici dosya yazman gerekiyorsa yalnızca oturumun geçici dizinine yaz ve işin bitince sil. Kullanıcının çalışma dizinine dosya bırakma. Python yoksa veya çalıştırma izni yoksa betiği atla, elle taramaya devam et; bu bir engel değildir.
+
+Bağımlılığı yoktur, Python 3.9+ yeterlidir. CI veya toplu denetimde `--fail-on error` bulgu varken 1 döndürür.
 
 Betik AI puanı üretmez, eşik aşan editoryal belirtileri listeler. Uyarıyı nihai hüküm sayma: az cümleli metinde ritim ölçüleri, özel adlarda sözcük örüntüleri, alıntılarda noktalama sayıları yanıltır. Bulgu yoksa bu "metin iyi" demek değildir.
 

@@ -1,6 +1,19 @@
 # Önce/sonra örnek bankası
 
-Her örnekte düzenleme **yalnızca girdide bulunan bilgiyle** yapılmıştır. Yeni olgu eklenmemiştir.
+Her örnekte düzenleme **yalnızca girdide bulunan bilgiyle** yapılmıştır. Yeni olgu eklenmemiştir. Birkaç örnekte, doğru onarımın yanında **"yapılmayacak onarım"** da gösterilir: bunlar akıcı göründüğü hâlde olgu ekleyen, eyleyeni değiştiren veya ilişki uyduran düzenlemelerdir.
+
+## İçindekiler
+
+- Kurumsal: soyut ad zinciri
+- Kurumsal: boş çerçeve + kanıtsız sıfat
+- Kurumsal: "X olarak" kalıbı
+- Teknik: çeviri kokusu
+- Haber: gizli yorum ve kaynaksız iddia
+- Sosyal medya: yapay neşe
+- Editoryal: aşırı açıklama
+- Hukuki: dokunulmaz tekrar
+- Diyalog: konuşma çizgisi korunur
+- Ritim: yanlış ve doğru müdahale
 
 ## Kurumsal: soyut ad zinciri
 

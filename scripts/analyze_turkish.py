@@ -17,12 +17,23 @@ import json
 import math
 import re
 import sys
-from collections import Counter
+import unicodedata
 from pathlib import Path
+
+__version__ = "1.1.0"
+SCHEMA_VERSION = 1
+
+# Çıkış kodları: 0 temiz, 1 --fail-on eşiği aşıldı, 2 argparse kullanım hatası,
+# 3 girdi okunamadı veya boş.
+EXIT_OK, EXIT_THRESHOLD, EXIT_INPUT = 0, 1, 3
 
 TURKISH = "A-Za-zÇĞİÖŞÜçğıöşüÂÎÛâîû"
 WORD_RE = re.compile(rf"[{TURKISH}]+(?:['’][{TURKISH}]+)?")
-ABBREVIATIONS = ("Dr.", "Prof.", "Doç.", "Yrd.", "Sn.", "vb.", "vs.", "No.", "T.C.", "Av.", "Bkz.", "Md.")
+ABBREVIATIONS = (
+    "Dr.", "Prof.", "Doç.", "Yrd.", "Sn.", "vb.", "vs.", "No.", "T.C.", "Av.",
+    "Bkz.", "bkz.", "Md.", "örn.", "age.", "vd.", "s.", "Mah.", "Cad.", "Sok.",
+    "Alb.", "Yzb.", "Öğr.", "Gör.", "Arş.", "A.Ş.", "Ltd.", "Şti.", "M.Ö.", "M.S.",
+)
 
 # --- Eşikler: kümelenme sayıları deneysel, hüküm değil uyarı üretir. ---
 T_TRANSITION = 3          # bürokratik geçiş kalıbı sayısı
@@ -78,11 +89,18 @@ TRANSLATIONESE_PATTERNS = {
         r"\b(?:olmuş\s+olan|olmakta\s+olan|bulunmakta\s+olan|[a-zçğıöşüâîû]+m[ıiuü]ş\s+olan)\b",
         re.IGNORECASE,
     ),
-    "ilgec-yigini": re.compile(r"\b(?:ile\s+ilgili\s+olarak|açısından|konusunda|bazında|nezdinde)\b", re.IGNORECASE),
+    "ilgec-yigini": re.compile(
+        r"\b(?:ile\s+ilgili\s+olarak|açısından|konusunda|bazında|nezdinde)\b", re.IGNORECASE
+    ),
 }
 
+# Baştaki [a-z]* şart: "reddedilir" gibi önekli biçimlerde gövde sözcük başında
+# durmaz ve sabit liste hukuki/resmî metinde neredeyse hiçbir şey yakalamaz.
 PASSIVE_STEMS_RE = re.compile(
-    r"\b(?:yapıl|edil|gerçekleştiril|sağlan|sunul|kullanıl|belirlen|değerlendiril|oluşturul|yürütül)"
+    r"\b[a-zçğıöşüâîû]*(?:yapıl|edil|gerçekleştiril|sağlan|sunul|kullanıl|belirlen"
+    r"|değerlendiril|oluşturul|yürütül|düzenlen|hesaplan|incelen|arşivlen|uygulan"
+    r"|veril|görül|yazıl|tutul|kurul|gönderil|saklan|denetlen|onaylan|tanımlan"
+    r"|ölçül|izlen|bildiril|iletil|dağıtıl|aktarıl|kaldırıl|güncellen)"
     r"[a-zçğıöşüâîû]*\b",
     re.IGNORECASE,
 )
@@ -178,22 +196,77 @@ SPELLING_RULES = (
     (re.compile(r"\bfarket[a-zçğıöşü]*\b", re.IGNORECASE), "fark et-"),
     (re.compile(r"\bheryer[a-zçğıöşü]*\b", re.IGNORECASE), "her yer"),
     (re.compile(r"\bhiçkimse\b", re.IGNORECASE), "hiç kimse"),
-    (re.compile(r"\b(?:gel|yap|al|ol|bil|gör|ver)[iı]c[ae]k\b", re.IGNORECASE), "-acak/-ecek (daralma yazılmaz)"),
+    (
+        re.compile(r"\b(?:gel|yap|al|ol|bil|gör|ver)[iı]c[ae]k\b", re.IGNORECASE),
+        "-acak/-ecek (daralma yazılmaz)",
+    ),
+    (re.compile(r"\bveyahutta\b", re.IGNORECASE), "veyahut"),
+    # -ki ilgi eki ünlü uyumuna girmez; istisnalar bugünkü/dünkü/öbürkü.
+    # IGNORECASE bilerek yok: Python'da ı ve i, I üzerinden aynı denklik
+    # sınıfına düşer ve "kı" deseni doğru yazılmış "ki"yi yakalar.
+    (
+        re.compile(r"\b(?:[Yy]arın|[Aa]kşam|[Ss]abah|[Gg]ece|[Öö]ğlen|[Bb]ura|[Şş]ura|[Oo]ra)kı\b"),
+        "-ki (uyuma girmez)",
+    ),
+    (re.compile(r"\b(?:[Bb]ugün|[Dd]ün|[Öö]bür)ki\b"), "-kü (bugünkü, dünkü, öbürkü)"),
+    # Bitişik yazılmış soru eki: "gelecekmi", "yapıyormu".
+    (
+        re.compile(
+            r"\b[a-zçğıöşüâîû]{2,}(?:[ae]c[ae]k|[ıiuü]yor|m[ıiuü]ş|[dt][ıiuü]|[ae]r)"
+            r"(?:m[ıiuü])(?:y[ıiuü]m|s[ıiuü]n|y[ıiuü]z|s[ıiuü]n[ıiuü]z)?\b",
+            re.IGNORECASE,
+        ),
+        "soru eki ayrı yazılır",
+    ),
+    # Bitişik yazılmış bağlaç ki: "güzelki", "biliyorumki". Kalıplaşmışlar
+    # (belki, çünkü, hâlbuki, mademki, meğerki, oysaki, sanki) dışarıda.
+    (
+        re.compile(
+            r"\b(?!belki|çünkü|hâlbuki|halbuki|mademki|meğerki|oysaki|sanki|illaki)"
+            r"[a-zçğıöşüâîû]{3,}(?:[ıiuü]yorum|[ıiuü]yor|d[ıiuü]r|l[ıiuü]|s[ıiuü]z|[ae]l)ki\b",
+            re.IGNORECASE,
+        ),
+        "bağlaç ki ayrı yazılır",
+    ),
+    # Kesme işaretinden sonra boşluk: "Ankara' da".
+    (re.compile(r"[’'][ ]+(?:d[ae]|t[ae]|n[ıiuü]n|y[ıiuü]|[ae])\b"), "kesmeden sonra boşluk yok"),
+)
+
+# Cümle başı bağlacından sonra virgül: İngilizce "However," kopyası.
+BAGLAC_VIRGUL_RE = re.compile(
+    r"(?:(?<=^)|(?<=[.!?]\s)|(?<=\n))\s*"
+    r"(?:Ancak|Ayrıca|Fakat|Lakin|Oysa|Hâlbuki|Halbuki|Dolayısıyla|Böylece|Bununla birlikte"
+    r"|Bu bağlamda|Bu doğrultuda|Bu çerçevede|Bu kapsamda|Öte yandan|Sonuç olarak"
+    r"|Buna karşılık|Bunun yanı sıra|Nitekim|Üstelik|Kaldı ki),",
 )
 
 
 def tr_lower(text: str) -> str:
-    """Türkçe kurallarına göre küçült: İ→i, I→ı."""
-    return text.replace("İ", "i").replace("I", "ı").lower()
+    """Türkçe kurallarına göre küçült: İ→i, I→ı.
+
+    NFC normalizasyonu şarttır: ayrışık biçimde (I + U+0307) gelen İ,
+    replace("I", "ı") tarafından bozulur ve sözcük tanıma tümden çöker.
+    casefold() kullanılmaz; o da İ'yi i+birleşik nokta yapar.
+    """
+    return unicodedata.normalize("NFC", text).replace("İ", "i").replace("I", "ı").lower()
+
+
+# Metinde bulunması pratikte imkânsız; "<DOT>" gibi görünür bir işaretçi
+# girdide geçtiğinde veriyi bozuyordu.
+_SENTINEL = "\x00"
 
 
 def split_sentences(text: str) -> list[str]:
     masked = text
-    marker = "<DOT>"
     for abbreviation in ABBREVIATIONS:
-        masked = masked.replace(abbreviation, abbreviation.replace(".", marker))
-    pieces = re.split(r"(?<=[.!?…])(?:[\"”’')\]]*)\s+|\n+", masked)
-    return [piece.replace(marker, ".").strip() for piece in pieces if piece.strip()]
+        masked = masked.replace(abbreviation, abbreviation.replace(".", _SENTINEL))
+    # Sıra sayısı ve ondalık: rakamdan sonraki nokta cümle sonu değildir.
+    # ("1. Madde geçerlidir." tek cümledir, iki değil.)
+    masked = re.sub(r"(?<=\d)\.(?=\s|\d|$)", _SENTINEL, masked)
+    # Tek satır sonu cümle sonu sayılmaz; yalnızca boş satır ayırır. Aksi hâlde
+    # sert satır sarması yapılmış bir dosyada bütün ritim ölçüleri bozulur.
+    pieces = re.split(r"(?<=[.!?…])[\"”’')\]]*\s+|\n\s*\n", masked)
+    return [piece.replace(_SENTINEL, ".").strip() for piece in pieces if piece.strip()]
 
 
 def words(text: str) -> list[str]:
@@ -228,8 +301,34 @@ def regex_examples(sentences: list[str], patterns: list[re.Pattern[str]], limit:
     return output
 
 
-def finding(code: str, level: str, count: int, message: str, examples: list[str]) -> dict[str, object]:
-    return {"code": code, "level": level, "count": count, "message": message, "examples": examples}
+def finding(
+    code: str,
+    level: str,
+    count: int,
+    message: str,
+    examples: list[str],
+    spans: list[tuple[int, int]] | None = None,
+) -> dict[str, object]:
+    return {
+        "code": code,
+        "level": level,
+        "count": count,
+        "message": message,
+        "examples": examples,
+        # Konum olmadan model bulgunun metinde nerede olduğunu bilmiyor ve
+        # tüm metni yeniden taramak zorunda kalıyor.
+        "spans": [list(span) for span in (spans or [])],
+    }
+
+
+def spans_of(text: str, patterns: list[re.Pattern[str]], limit: int = 20) -> list[tuple[int, int]]:
+    found: list[tuple[int, int]] = []
+    for pattern in patterns:
+        for match in pattern.finditer(text):
+            found.append((match.start(), match.end()))
+            if len(found) >= limit:
+                return sorted(found)
+    return sorted(found)
 
 
 def analyze(text: str) -> dict[str, object]:
@@ -261,8 +360,23 @@ def analyze(text: str) -> dict[str, object]:
         findings.append(
             finding(
                 "spelling-error", "error", len(spelling_hits),
-                "TDK yazımına göre kesin hata; doğrudan düzelt.",
+                "TDK yazımına göre kesin hata; doğrudan düzelt. Özel ad, marka adı veya alıntı "
+                "içindeyse dokunma: betik korunan bölgeleri göremez.",
                 spelling_hits[:6],
+                spans_of(text, [pattern for pattern, _ in SPELLING_RULES]),
+            )
+        )
+
+    # 1b. Cümle başı bağlacından sonra virgül (İngilizce kopyası)
+    baglac_virgul = BAGLAC_VIRGUL_RE.findall(text)
+    if baglac_virgul:
+        findings.append(
+            finding(
+                "baglac-virgul", "error", len(baglac_virgul),
+                "Cümle başındaki bağlaçtan sonra virgül konmaz; bu İngilizce 'However,' kalıbının "
+                "kopyasıdır. Virgülü kaldır.",
+                regex_examples(sentences, [BAGLAC_VIRGUL_RE]),
+                spans_of(text, [BAGLAC_VIRGUL_RE]),
             )
         )
 
@@ -272,7 +386,8 @@ def analyze(text: str) -> dict[str, object]:
         findings.append(
             finding(
                 "transition-cluster", "review", transition_total,
-                "Kurumsal geçiş kalıpları kümeleniyor; her bağlacın gerçek bir ilişkiyi taşıyıp taşımadığını kontrol et.",
+                "Kurumsal geçiş kalıpları kümeleniyor; her bağlacın gerçek bir ilişkiyi taşıyıp "
+                "taşımadığını kontrol et.",
                 sentence_examples(sentences, PHRASE_GROUPS["bureaucratic_transitions"]),
             )
         )
@@ -283,7 +398,8 @@ def analyze(text: str) -> dict[str, object]:
         findings.append(
             finding(
                 "unsupported-evaluation", "review", evaluation_total,
-                "Değerlendirici ifadeler kümeleniyor; metinde zaten var olan kanıtla eşleştir, yoksa kaldır. Yeni ayrıntı uydurma.",
+                "Değerlendirici ifadeler kümeleniyor; metinde zaten var olan kanıtla eşleştir, "
+                "yoksa kaldır. Yeni ayrıntı uydurma.",
                 sentence_examples(sentences, PHRASE_GROUPS["empty_evaluations"]),
             )
         )
@@ -294,7 +410,8 @@ def analyze(text: str) -> dict[str, object]:
         findings.append(
             finding(
                 "meta-framing", "review", framing_total,
-                "Metin, içerik yerine konunun önemini anlatan üst çerçeve kalıplarını tekrarlıyor; silmeyi dene, bilgi kaybı olmuyorsa dolgudur.",
+                "Metin, içerik yerine konunun önemini anlatan üst çerçeve kalıplarını tekrarlıyor; "
+                "silmeyi dene, bilgi kaybı olmuyorsa dolgudur.",
                 sentence_examples(sentences, PHRASE_GROUPS["meta_framing"]),
             )
         )
@@ -310,7 +427,8 @@ def analyze(text: str) -> dict[str, object]:
         findings.append(
             finding(
                 "translationese", "review", translationese_total,
-                "İngilizce cümle iskeleti belirtileri kümeleniyor (sahip olmak / gerçekleştirmek / sağlamak / yer almak). "
+                "İngilizce cümle iskeleti belirtileri kümeleniyor "
+                "(sahip olmak / gerçekleştirmek / sağlamak / yer almak). "
                 "Eyleyeni bul, asıl fiili çıkar, cümleyi yeniden kur.",
                 regex_examples(sentences, list(TRANSLATIONESE_PATTERNS.values())),
             )
@@ -344,7 +462,8 @@ def analyze(text: str) -> dict[str, object]:
         findings.append(
             finding(
                 "passive-cluster", "notice", len(passive_matches),
-                "Edilgen gövdeler kümeleniyor; sorumluluk veya eyleyen belirsizleşiyorsa etkin yapıyı değerlendir.",
+                "Edilgen gövdeler kümeleniyor; sorumluluk veya eyleyen belirsizleşiyorsa "
+                "etkin yapıyı değerlendir.",
                 regex_examples(sentences, [PASSIVE_STEMS_RE]),
             )
         )
@@ -355,7 +474,8 @@ def analyze(text: str) -> dict[str, object]:
         findings.append(
             finding(
                 "contrast-template", "notice", len(contrast_matches),
-                "'Sadece X değil, aynı zamanda Y' kalıbı tekrar ediyor; iki düşünce arasındaki gerçek ilişkiyi kontrol et.",
+                "'Sadece X değil, aynı zamanda Y' kalıbı tekrar ediyor; iki düşünce arasındaki "
+                "gerçek ilişkiyi kontrol et.",
                 regex_examples(sentences, [CONTRAST_RE]),
             )
         )
@@ -372,21 +492,15 @@ def analyze(text: str) -> dict[str, object]:
         findings.append(
             finding(
                 "paragraph-starter-pattern", "review", len(starter_hits),
-                "Birden çok paragraf hazır geçiş ifadesiyle başlıyor; akışın bağlaç olmadan da açık olup olmadığını sına.",
+                "Birden çok paragraf hazır geçiş ifadesiyle başlıyor; akışın bağlaç olmadan da "
+                "açık olup olmadığını sına.",
                 starter_hits[:3],
             )
         )
 
-    # 11. Tekdüze cümle uzunluğu
-    if len(sentences) >= 4 and mean_length >= 12 and cv < T_CV:
-        findings.append(
-            finding(
-                "uniform-sentence-length", "notice", len(sentences),
-                "Cümle uzunlukları birbirine yakın. Tek başına sorun değildir; sesli okumada ritim gerçekten tekdüzeyse "
-                "cümleyi bölmek yerine bilgi sırasını ve vurgu yerini değiştir.",
-                [],
-            )
-        )
+    # 11. Tekdüze cümle uzunluğu — yalnızca eşlik eden bir belirti varsa.
+    # signals.md § Düşük ağırlıklı: "cümle uzunluğu varyansı tek başına kullanılmaz".
+    uniform = len(sentences) >= 4 and mean_length >= 12 and cv < T_CV
 
     # 12. Yasak: ara söz uzun çizgisi (demir kural 4)
     # Satır başındaki konuşma çizgisi TDK kuralıdır; sayımdan düşülür.
@@ -415,25 +529,50 @@ def analyze(text: str) -> dict[str, object]:
             finding(
                 "olarak-kalibi", "review", len(olarak_sentences),
                 "Marka/kurum/ekip adı + 'olarak' + biz-anlatımı. Özneyi doğrudan yaz: "
-                "'X olarak yaptığımız' → 'X'in yaptığı'. Alıntı içindeyse, karşıtlık odağı taşıyorsa "
+                "'X olarak yaptığımız' → 'X'in yaptığı'. Alıntı içindeyse, karşıtlık odağı "
+                "taşıyorsa "
                 "veya hukuki taraf sıfatı bildiriyorsa dokunma.",
                 [s[:220] for s in olarak_sentences[:3]],
             )
         )
 
-    # 14. Noktalı virgül yoğunluğu
+    # 14. Düşük ağırlıklı belirtiler: signals.md gereği tek başına raporlanmaz.
+    # Ancak başka bir belirti varsa okuma sorununu açıklamaya katkı verebilirler.
     semicolon_count = text.count(";")
-    if semicolon_count >= 3:
-        findings.append(
-            finding(
-                "semicolon-density", "notice", semicolon_count,
-                "Noktalı virgül yoğunluğu dikkat çekiyor; tür normu açısından doğrula, otomatik hata sayma.",
-                [],
+    supporting = any(item["level"] in ("error", "review") for item in findings)
+    if supporting:
+        if uniform:
+            findings.append(
+                finding(
+                    "uniform-sentence-length", "notice", len(sentences),
+                    "Cümle uzunlukları birbirine yakın. Tek başına sorun değildir; sesli okumada ritim "
+                    "gerçekten tekdüzeyse cümleyi bölmek yerine bilgi sırasını ve vurgu yerini değiştir.",
+                    [],
+                )
             )
-        )
+        if semicolon_count >= 3:
+            findings.append(
+                finding(
+                    "semicolon-density", "notice", semicolon_count,
+                    "Noktalı virgül yoğunluğu dikkat çekiyor; tür normu açısından doğrula, "
+                    "otomatik hata sayma.",
+                    [],
+                )
+            )
+
+    summary = {"error": 0, "review": 0, "notice": 0}
+    for item in findings:
+        summary[str(item["level"])] += 1
 
     return {
-        "disclaimer": "Bu rapor AI yazarlığı veya metin kalitesi puanı değildir; bağlama bağlı editoryal uyarılar içerir.",
+        "schema_version": SCHEMA_VERSION,
+        "tool": {"name": "avaz-analyze", "version": __version__},
+        "disclaimer": (
+            "Bu rapor AI yazarlığı veya metin kalitesi puanı değildir; bağlama bağlı editoryal "
+            "uyarılar içerir. Betik korunan bölgeleri (özel ad, alıntı, kod, şablon değişkeni) "
+            "göremez; 'error' seviyesi bile öneridir."
+        ),
+        "summary": summary,
         "statistics": {
             "characters": len(text),
             "words": token_count,
@@ -463,7 +602,8 @@ def render_text(report: dict[str, object]) -> str:
     if not findings:
         lines.extend([
             "",
-            "Tanımlı eşikleri aşan bir belirti bulunmadı. Bu, metnin kusursuz veya insan yazımı olduğu anlamına gelmez.",
+            "Tanımlı eşikleri aşan bir belirti bulunmadı. Bu, metnin kusursuz veya insan yazımı "
+            "olduğu anlamına gelmez.",
         ])
         return "\n".join(lines)
     lines.extend(["", "Uyarılar:"])
@@ -474,35 +614,72 @@ def render_text(report: dict[str, object]) -> str:
     return "\n".join(lines)
 
 
+MAX_BYTES = 10 * 1024 * 1024
+
+
 def read_input(path: str | None) -> str:
-    if path:
-        return Path(path).read_text(encoding="utf-8-sig")
-    return sys.stdin.read()
+    if path and path != "-":
+        target = Path(path)
+        if target.stat().st_size > MAX_BYTES:
+            raise ValueError(f"dosya {MAX_BYTES // 1024 // 1024} MB sınırını aşıyor")
+        text = target.read_text(encoding="utf-8-sig")
+    else:
+        text = sys.stdin.read()
+    # BOM dosya yolunda utf-8-sig ile düşüyor ama stdin'de kalıyordu; aynı
+    # içeriğin iki yoldan farklı sonuç vermemesi için burada da temizlenir.
+    return unicodedata.normalize("NFC", text.lstrip("﻿"))
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Türkçe metindeki editoryal belirtileri raporla; AI puanı üretme."
     )
-    parser.add_argument("path", nargs="?", help="UTF-8 metin dosyası; verilmezse stdin okunur")
+    parser.add_argument("path", nargs="?", help="UTF-8 metin dosyası; '-' veya boşsa stdin okunur")
     parser.add_argument("--format", choices=("text", "json"), default="text", dest="output_format")
+    parser.add_argument("--version", action="version", version=f"avaz-analyze {__version__}")
+    parser.add_argument(
+        "--fail-on", choices=("none", "error", "review", "notice"), default="none",
+        help="bu seviyede veya üstünde bulgu varsa 1 ile çık (CI için)",
+    )
+    parser.add_argument(
+        "--max-examples", type=int, default=3, help="bulgu başına örnek cümle sayısı (varsayılan 3)",
+    )
+    parser.add_argument("--compact", action="store_true", help="JSON'u boşluksuz yaz")
     args = parser.parse_args()
+
+    if not args.path and sys.stdin.isatty():
+        parser.error("dosya yolu verilmedi ve stdin bir terminale bağlı; '-' ile boru kullanın")
 
     try:
         text = read_input(args.path)
-    except (OSError, UnicodeError) as exc:
+    except (OSError, UnicodeError, ValueError) as exc:
         print(f"Girdi okunamadı: {exc}", file=sys.stderr)
-        return 2
+        return EXIT_INPUT
+    if "\x00" in text[:4096]:
+        print("İkili dosya analiz edilemez.", file=sys.stderr)
+        return EXIT_INPUT
     if not text.strip():
         print("Boş metin analiz edilemez.", file=sys.stderr)
-        return 2
+        return EXIT_INPUT
 
     report = analyze(text)
+    if args.max_examples != 3:
+        for item in report["findings"]:
+            item["examples"] = item["examples"][: max(0, args.max_examples)]
+
     if args.output_format == "json":
-        print(json.dumps(report, ensure_ascii=False, indent=2))
+        if args.compact:
+            print(json.dumps(report, ensure_ascii=False, separators=(",", ":")))
+        else:
+            print(json.dumps(report, ensure_ascii=False, indent=2))
     else:
         print(render_text(report))
-    return 0
+
+    if args.fail_on != "none":
+        order = {"notice": 0, "review": 1, "error": 2}
+        if any(order[str(f["level"])] >= order[args.fail_on] for f in report["findings"]):
+            return EXIT_THRESHOLD
+    return EXIT_OK
 
 
 if __name__ == "__main__":

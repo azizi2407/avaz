@@ -1,0 +1,70 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: python -m pip install --upgrade pip
+      - run: pip install -e ".[dev]"
+      - name: ruff
+        run: ruff check scripts tests
+      - name: pytest
+        run: pytest -q
+
+  skill-spec:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pyyaml
+      - name: SKILL.md frontmatter doğrulaması
+        run: |
+          python - <<'PY'
+          import pathlib, re, sys, yaml
+
+          icerik = pathlib.Path("SKILL.md").read_text(encoding="utf-8")
+          eslesme = re.match(r"^---\n(.*?)\n---", icerik, re.DOTALL)
+          if not eslesme:
+              sys.exit("SKILL.md frontmatter yok")
+          try:
+              veri = yaml.safe_load(eslesme.group(1))
+          except yaml.YAMLError as exc:
+              sys.exit(f"frontmatter geçersiz YAML: {exc}")
+          izinli = {"name", "description", "license", "allowed-tools", "metadata", "compatibility"}
+          fazla = set(veri) - izinli
+          if fazla:
+              sys.exit(f"izinsiz anahtar: {fazla}")
+          if not re.fullmatch(r"[a-z0-9-]{1,64}", veri["name"]):
+              sys.exit(f"geçersiz name: {veri['name']}")
+          if not 0 < len(veri["description"]) <= 1024:
+              sys.exit(f"description uzunluğu: {len(veri['description'])}")
+          print(f"SKILL.md geçerli: {veri['name']} ({len(veri['description'])} karakter)")
+          PY
+
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: stdin ve dosya yolu duman testi
+        run: |
+          echo "Bu bağlamda herşey güzeldir." | python3 scripts/analyze_turkish.py --format json
+          python3 scripts/analyze_turkish.py tests/fixtures/02_agir_ai_kokusu.txt
+          python3 scripts/analyze_turkish.py --version
